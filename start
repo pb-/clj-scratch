@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+PORT_FILE=.nrepl-port
+
+mkdir -p src
+LAST_FILE=$(ls src | tail -n 1)
+
+if [ $# -gt 0 ] || [ -z "$LAST_FILE" ]; then
+    NAME=$(date +scratch_%y%m%d_%H%M%S)
+    NS=${NAME//_/-}
+    FILE="src/$NAME.clj"
+
+    echo -e "(ns $NS)\n" > "$FILE"
+else
+    FILE="src/$LAST_FILE"
+fi
+
+
+if [ -f "$PORT_FILE" ]; then
+    1>&2 echo "already running! (delete $PORT_FILE if this is not true)"
+    exit 1
+else
+    echo "starting nrepl"
+    2>&1 clojure -M:nrepl > /dev/null &
+    PID=$!
+
+    echo "waiting for port file to appear..."
+    while [ ! -f "$PORT_FILE" ]; do
+        sleep 0.25
+    done
+
+    echo "starting editor on $FILE"
+    $EDITOR "$FILE"
+
+    echo "killing $PID"
+    kill $PID
+
+    echo "done"
+fi
