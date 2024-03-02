@@ -23,7 +23,7 @@ if [ -f "$PORT_FILE" ]; then
     exit 1
 else
     echo "starting nrepl"
-    2>&1 clojure -M:nrepl > /dev/null &
+    clojure -M:nrepl > /dev/null &
     PID=$!
 
     echo "waiting for port file to appear..."
